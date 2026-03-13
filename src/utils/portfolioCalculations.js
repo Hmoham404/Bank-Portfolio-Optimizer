@@ -114,16 +114,6 @@ export const calculateSharpeRatio = (return_, risk, riskFreeRate = 0.02) => {
 
 // ========== DONNÉES PAR DÉFAUT ==========
 
-// Note: Ces données sont utilisées implicitement via DEFAULT_RETURNS
-const DEFAULT_BANKS = [
-  { name: 'BIAT' },
-  { name: 'BNA' },
-  { name: 'Attijari' },
-  { name: 'Amen' },
-  { name: 'BT' },
-  { name: 'UIB' }
-];
-
 const DEFAULT_RETURNS = {
   'BIAT': [0.025, 0.018, 0.032, 0.021, 0.019, 0.028],
   'BNA': [0.018, 0.022, 0.015, 0.024, 0.020, 0.017],
