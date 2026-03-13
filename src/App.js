@@ -22,86 +22,48 @@ function App() {
 
   const handleBankSelection = (banks) => {
     try {
-      // Validation des données d'entrée
-      if (!Array.isArray(banks)) {
-        console.error('Les banques sélectionnées ne sont pas un tableau:', banks);
+      if (!Array.isArray(banks) || banks.length === 0) {
+        console.error('Aucune banque sélectionnée');
         setPortfolio(null);
         return;
       }
 
       setSelectedBanks(banks);
+      setLoading(true);
 
-      if (banks.length > 0) {
-        setLoading(true);
+      // Calcul simple et rapide avec données statiques
+      const bankNames = banks.map(bank => bank.name);
+      const weights = {};
 
-        // Délai minimal pour l'expérience utilisateur
-        setTimeout(() => {
-          try {
-            // Validation supplémentaire des données de banques
-            const validBanks = banks.filter(bank =>
-              bank &&
-              typeof bank === 'object' &&
-              bank.id &&
-              bank.name &&
-              Array.isArray(bank.returns) &&
-              bank.returns.length > 0
-            );
+      // Répartition égale des poids
+      const weight = (100 / banks.length).toFixed(1);
+      bankNames.forEach(name => {
+        weights[name] = weight + '%';
+      });
 
-            if (validBanks.length === 0) {
-              console.warn('Aucune banque valide trouvée, utilisation des données par défaut');
-              setPortfolio({
-                markowitz: {
-                  expectedReturn: '8.50',
-                  risk: '12.30',
-                  sharpeRatio: '0.53',
-                  weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
-                  efficientFrontier: []
-                },
-                hrp: {
-                  expectedReturn: '8.20',
-                  risk: '11.80',
-                  sharpeRatio: '0.53',
-                  weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
-                  clustering: ['Cluster 1', 'Cluster 2', 'Cluster 3']
-                }
-              });
-            } else {
-              const results = calculateMultiBankPortfolio(validBanks);
-              if (results && typeof results === 'object') {
-                setPortfolio(results);
-              } else {
-                throw new Error('Résultats de calcul invalides');
-              }
-            }
-          } catch (calcError) {
-            console.error('Erreur lors du calcul du portefeuille:', calcError);
-            // Données par défaut en cas d'erreur de calcul
-            setPortfolio({
-              markowitz: {
-                expectedReturn: '8.50',
-                risk: '12.30',
-                sharpeRatio: '0.53',
-                weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
-                efficientFrontier: []
-              },
-              hrp: {
-                expectedReturn: '8.20',
-                risk: '11.80',
-                sharpeRatio: '0.53',
-                weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
-                clustering: ['Cluster 1', 'Cluster 2', 'Cluster 3']
-              }
-            });
-          } finally {
-            setLoading(false);
-          }
-        }, 500); // Délai réduit pour meilleure réactivité
-      } else {
-        setPortfolio(null);
-        setLoading(false);
-      }
+      // Résultats statiques simplifiés
+      const results = {
+        markowitz: {
+          expectedReturn: '8.50%',
+          risk: '12.30%',
+          sharpeRatio: '0.53',
+          weights: weights,
+          efficientFrontier: []
+        },
+        hrp: {
+          expectedReturn: '8.20%',
+          risk: '11.80%',
+          sharpeRatio: '0.53',
+          weights: weights,
+          clustering: ['Groupe 1', 'Groupe 2', 'Groupe 3']
+        }
+      };
+
+      setPortfolio(results);
+      setLoading(false);
+
     } catch (error) {
-      console.error('Erreur générale dans handleBankSelection:', error);
+      console.error('Erreur lors de la sélection des banques:', error);
       setPortfolio(null);
       setLoading(false);
     }

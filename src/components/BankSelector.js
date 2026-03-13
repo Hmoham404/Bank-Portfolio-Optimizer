@@ -32,8 +32,13 @@ const BankSelector = ({ onSelectBanks }) => {
               type="checkbox"
               id={bank.name}
               label={
-                <span>
-                  {bank.logo} {bank.name}
+                <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <img
+                    src={bank.logo}
+                    alt={`${bank.name} logo`}
+                    style={{ width: '30px', height: '30px', objectFit: 'contain' }}
+                  />
+                  {bank.name}
                 </span>
               }
               checked={selectedBanks.some(b => b.name === bank.name)}
