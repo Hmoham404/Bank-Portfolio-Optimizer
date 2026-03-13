@@ -30,7 +30,7 @@ function App() {
       // Simuler un délai de calcul
       setTimeout(() => {
         try {
-          const results = calculateMultiBankPortfolio(banks);
+          const results = calculateMultiBankPortfolio(selectedBanks);
           console.log('Résultats:', results);
           setPortfolio(results);
         } catch (error) {
@@ -49,13 +49,13 @@ function App() {
               risk: '11.80',
               sharpeRatio: '0.53',
               weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
-              clustering: ['Cluster 1', 'Cluster 2']
+              clustering: ['Cluster 1', 'Cluster 2', 'Cluster 3']
             }
           });
         } finally {
           setLoading(false);
         }
-      }, 1000);
+      }, 3000);
     } else {
       setPortfolio(null);
     }
