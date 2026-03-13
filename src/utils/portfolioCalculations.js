@@ -215,8 +215,31 @@ const generateClusters = (numAssets) => {
 export const calculateMarkowitzPortfolio = (bankData) => {
   try {
     
-    // Si pas de données, retourner des données par défaut
-    if (!bankData || !Array.isArray(bankData) || bankData.length === 0) {
+    // Validation rigoureuse des données d'entrée
+    if (!Array.isArray(bankData) || bankData.length === 0) {
+      console.warn('Aucune donnée de banque fournie à calculateMarkowitzPortfolio');
+      return {
+        expectedReturn: '8.50',
+        risk: '12.30',
+        sharpeRatio: '0.53',
+        weights: generateBalancedWeights(['BIAT', 'BNA', 'Attijari']),
+        efficientFrontier: generateEfficientFrontier()
+      };
+    }
+
+    // Validation de chaque banque
+    const validBanks = bankData.filter(bank =>
+      bank &&
+      typeof bank === 'object' &&
+      typeof bank.name === 'string' &&
+      bank.name.trim() !== '' &&
+      Array.isArray(bank.returns) &&
+      bank.returns.length > 0 &&
+      bank.returns.every(r => typeof r === 'number' && !isNaN(r))
+    );
+
+    if (validBanks.length === 0) {
+      console.warn('Aucune banque valide trouvée dans calculateMarkowitzPortfolio');
       return {
         expectedReturn: '8.50',
         risk: '12.30',
@@ -226,8 +249,15 @@ export const calculateMarkowitzPortfolio = (bankData) => {
       };
     }
     
+    // Utiliser seulement les banques valides
+    bankData = validBanks;
+    
     // Extraire les noms des banques
-    const bankNames = bankData.map(b => b && b.name ? b.name : 'Banque').filter(Boolean);
+    const bankNames = bankData.map(b => b.name).filter(name => name && typeof name === 'string');
+    
+    if (bankNames.length === 0) {
+      throw new Error('Aucun nom de banque valide trouvé');
+    }
     
     // Construire la matrice des rendements (n actifs x m périodes)
     const returnsMatrix = bankData.map(bank => {
@@ -366,30 +396,60 @@ export const calculateHRPPortfolio = (bankData) => {
  */
 export const calculateMultiBankPortfolio = (selectedBanks) => {
   try {
-    
-    // Toujours retourner quelque chose, même en cas d'erreur
-    const markowitz = calculateMarkowitzPortfolio(selectedBanks);
-    const hrp = calculateHRPPortfolio(selectedBanks);
-    
+    // Validation rigoureuse des données d'entrée
+    if (!Array.isArray(selectedBanks) || selectedBanks.length === 0) {
+      console.warn('Aucune banque sélectionnée');
+      return getDefaultPortfolio();
+    }
+
+    // Validation de chaque banque
+    const validBanks = selectedBanks.filter(bank =>
+      bank &&
+      typeof bank === 'object' &&
+      typeof bank.name === 'string' &&
+      bank.name.trim() !== '' &&
+      Array.isArray(bank.returns) &&
+      bank.returns.length > 0 &&
+      bank.returns.every(r => typeof r === 'number' && !isNaN(r))
+    );
+
+    if (validBanks.length === 0) {
+      console.warn('Aucune banque valide trouvée');
+      return getDefaultPortfolio();
+    }
+
+    // Calcul des portefeuilles avec protection
+    const markowitz = calculateMarkowitzPortfolio(validBanks);
+    const hrp = calculateHRPPortfolio(validBanks);
+
+    // Validation des résultats
+    if (!markowitz || !hrp) {
+      console.error('Résultats de calcul invalides');
+      return getDefaultPortfolio();
+    }
+
     return { markowitz, hrp };
-    
+
   } catch (error) {
-    // Retourner des données par défaut en cas d'erreur
-    return {
-      markowitz: {
-        expectedReturn: '8.50',
-        risk: '12.30',
-        sharpeRatio: '0.53',
-        weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
-        efficientFrontier: generateEfficientFrontier()
-      },
-      hrp: {
-        expectedReturn: '8.20',
-        risk: '11.80',
-        sharpeRatio: '0.53',
-        weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
-        clustering: ['Cluster 1', 'Cluster 2', 'Cluster 3']
-      }
-    };
+    console.error('Erreur calculateMultiBankPortfolio:', error);
+    return getDefaultPortfolio();
   }
 };
+
+// Fonction helper pour les données par défaut
+const getDefaultPortfolio = () => ({
+  markowitz: {
+    expectedReturn: '8.50',
+    risk: '12.30',
+    sharpeRatio: '0.53',
+    weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
+    efficientFrontier: []
+  },
+  hrp: {
+    expectedReturn: '8.20',
+    risk: '11.80',
+    sharpeRatio: '0.53',
+    weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
+    clustering: ['Cluster 1', 'Cluster 2', 'Cluster 3']
+  }
+});

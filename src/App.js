@@ -21,37 +21,89 @@ function App() {
   const [activeSection, setActiveSection] = useState('theorie');
 
   const handleBankSelection = (banks) => {
-    setSelectedBanks(banks);
-    
-    if (banks.length > 0) {
-      setLoading(true);
-      
-      try {
-        const results = calculateMultiBankPortfolio(banks);
-        setPortfolio(results);
-      } catch (error) {
-        // Données par défaut en cas d'erreur
-        setPortfolio({
-          markowitz: {
-            expectedReturn: '8.50',
-            risk: '12.30',
-            sharpeRatio: '0.53',
-            weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
-            efficientFrontier: []
-          },
-          hrp: {
-            expectedReturn: '8.20',
-            risk: '11.80',
-            sharpeRatio: '0.53',
-            weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
-            clustering: ['Cluster 1', 'Cluster 2', 'Cluster 3']
+    try {
+      // Validation des données d'entrée
+      if (!Array.isArray(banks)) {
+        console.error('Les banques sélectionnées ne sont pas un tableau:', banks);
+        setPortfolio(null);
+        return;
+      }
+
+      setSelectedBanks(banks);
+
+      if (banks.length > 0) {
+        setLoading(true);
+
+        // Délai minimal pour l'expérience utilisateur
+        setTimeout(() => {
+          try {
+            // Validation supplémentaire des données de banques
+            const validBanks = banks.filter(bank =>
+              bank &&
+              typeof bank === 'object' &&
+              bank.id &&
+              bank.name &&
+              Array.isArray(bank.returns) &&
+              bank.returns.length > 0
+            );
+
+            if (validBanks.length === 0) {
+              console.warn('Aucune banque valide trouvée, utilisation des données par défaut');
+              setPortfolio({
+                markowitz: {
+                  expectedReturn: '8.50',
+                  risk: '12.30',
+                  sharpeRatio: '0.53',
+                  weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
+                  efficientFrontier: []
+                },
+                hrp: {
+                  expectedReturn: '8.20',
+                  risk: '11.80',
+                  sharpeRatio: '0.53',
+                  weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
+                  clustering: ['Cluster 1', 'Cluster 2', 'Cluster 3']
+                }
+              });
+            } else {
+              const results = calculateMultiBankPortfolio(validBanks);
+              if (results && typeof results === 'object') {
+                setPortfolio(results);
+              } else {
+                throw new Error('Résultats de calcul invalides');
+              }
+            }
+          } catch (calcError) {
+            console.error('Erreur lors du calcul du portefeuille:', calcError);
+            // Données par défaut en cas d'erreur de calcul
+            setPortfolio({
+              markowitz: {
+                expectedReturn: '8.50',
+                risk: '12.30',
+                sharpeRatio: '0.53',
+                weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
+                efficientFrontier: []
+              },
+              hrp: {
+                expectedReturn: '8.20',
+                risk: '11.80',
+                sharpeRatio: '0.53',
+                weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
+                clustering: ['Cluster 1', 'Cluster 2', 'Cluster 3']
+              }
+            });
+          } finally {
+            setLoading(false);
           }
-        });
-      } finally {
+        }, 500); // Délai réduit pour meilleure réactivité
+      } else {
+        setPortfolio(null);
         setLoading(false);
       }
-    } else {
+    } catch (error) {
+      console.error('Erreur générale dans handleBankSelection:', error);
       setPortfolio(null);
+      setLoading(false);
     }
   };
 
