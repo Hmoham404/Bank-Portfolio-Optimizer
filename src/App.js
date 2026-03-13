@@ -12,7 +12,6 @@ import PortfolioResults from './components/PortfolioResults';
 import MarkowitzChart from './components/MarkowitzChart';
 import HRPChart from './components/HRPChart';
 import Footer from './components/Footer';
-import { calculateMultiBankPortfolio } from './utils/portfolioCalculations';
 
 function App() {
   const [selectedBanks, setSelectedBanks] = useState([]);
