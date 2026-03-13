@@ -2559,3 +2559,151 @@ body::before {
   position: relative;
   z-index: 1;
 }
+
+/* Styles pour la section Calculator */
+.calculator-section {
+  padding: 40px 0;
+  background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 50%, #f0f4ff 100%);
+  border-radius: 20px;
+  margin: 20px 0;
+  box-shadow: inset 0 0 50px rgba(30, 60, 114, 0.1);
+}
+
+.calculator-section .display-4 {
+  font-weight: 700;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+}
+
+.selected-banks-summary {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 15px;
+  padding: 20px;
+  margin: 30px auto;
+  max-width: 800px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(30, 60, 114, 0.1);
+}
+
+.selected-banks-summary .badge {
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.selected-banks-summary .badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.chart-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+  height: 100%;
+  overflow: hidden;
+}
+
+.chart-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.card-header-custom {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px 25px;
+  border-radius: 20px 20px 0 0;
+  border-bottom: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.card-header-custom h4 {
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.chart-card .card-body {
+  padding: 25px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* Boutons de navigation */
+.calculator-section .btn {
+  border-radius: 50px;
+  padding: 12px 30px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  border: 2px solid;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.calculator-section .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.calculator-section .btn-outline-primary {
+  border-color: #007bff;
+  color: #007bff;
+}
+
+.calculator-section .btn-outline-primary:hover {
+  background: #007bff;
+  border-color: #007bff;
+}
+
+.calculator-section .btn-primary {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  border-color: #007bff;
+}
+
+.calculator-section .btn-primary:hover {
+  background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+  border-color: #0056b3;
+}
+
+/* Animation d'entrée */
+.calculator-section {
+  animation: slideInUp 0.8s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .calculator-section {
+    padding: 20px 0;
+    margin: 10px 0;
+  }
+
+  .selected-banks-summary {
+    padding: 15px;
+    margin: 20px 10px;
+  }
+
+  .chart-card {
+    margin-bottom: 20px;
+  }
+
+  .calculator-section .btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    margin: 5px;
+  }
+}
