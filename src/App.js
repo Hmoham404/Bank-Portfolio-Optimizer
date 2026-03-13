@@ -21,41 +21,35 @@ function App() {
   const [activeSection, setActiveSection] = useState('theorie');
 
   const handleBankSelection = (banks) => {
-    console.log('Banques sélectionnées:', banks);
     setSelectedBanks(banks);
     
     if (banks.length > 0) {
       setLoading(true);
       
-      // Simuler un délai de calcul
-      setTimeout(() => {
-        try {
-          const results = calculateMultiBankPortfolio(selectedBanks);
-          console.log('Résultats:', results);
-          setPortfolio(results);
-        } catch (error) {
-          console.error('Erreur:', error);
-          // Données par défaut en cas d'erreur
-          setPortfolio({
-            markowitz: {
-              expectedReturn: '8.50',
-              risk: '12.30',
-              sharpeRatio: '0.53',
-              weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
-              efficientFrontier: []
-            },
-            hrp: {
-              expectedReturn: '8.20',
-              risk: '11.80',
-              sharpeRatio: '0.53',
-              weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
-              clustering: ['Cluster 1', 'Cluster 2', 'Cluster 3']
-            }
-          });
-        } finally {
-          setLoading(false);
-        }
-      }, 3000);
+      try {
+        const results = calculateMultiBankPortfolio(banks);
+        setPortfolio(results);
+      } catch (error) {
+        // Données par défaut en cas d'erreur
+        setPortfolio({
+          markowitz: {
+            expectedReturn: '8.50',
+            risk: '12.30',
+            sharpeRatio: '0.53',
+            weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
+            efficientFrontier: []
+          },
+          hrp: {
+            expectedReturn: '8.20',
+            risk: '11.80',
+            sharpeRatio: '0.53',
+            weights: { 'BIAT': '0.333', 'BNA': '0.333', 'Attijari': '0.334' },
+            clustering: ['Cluster 1', 'Cluster 2', 'Cluster 3']
+          }
+        });
+      } finally {
+        setLoading(false);
+      }
     } else {
       setPortfolio(null);
     }

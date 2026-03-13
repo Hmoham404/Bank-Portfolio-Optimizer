@@ -302,7 +302,6 @@ const generateClusters = (numAssets) => {
  */
 export const calculateMarkowitzPortfolio = (bankData) => {
   try {
-    console.log('Calcul Markowitz...');
     
     // Si pas de données, retourner des données par défaut
     if (!bankData || !Array.isArray(bankData) || bankData.length === 0) {
@@ -381,7 +380,6 @@ export const calculateMarkowitzPortfolio = (bankData) => {
  */
 export const calculateHRPPortfolio = (bankData) => {
   try {
-    console.log('Calcul HRP...');
     
     // Si pas de données, retourner des données par défaut
     if (!bankData || !Array.isArray(bankData) || bankData.length === 0) {
@@ -449,7 +447,6 @@ export const calculateHRPPortfolio = (bankData) => {
  */
 export const calculateMultiBankPortfolio = (selectedBanks) => {
   try {
-    console.log('Calcul multi-banques pour', selectedBanks?.length || 0, 'banques');
     
     // Toujours retourner quelque chose, même en cas d'erreur
     const markowitz = calculateMarkowitzPortfolio(selectedBanks);
@@ -458,7 +455,6 @@ export const calculateMultiBankPortfolio = (selectedBanks) => {
     return { markowitz, hrp };
     
   } catch (error) {
-    console.error('Erreur calculateMultiBankPortfolio:', error);
     // Retourner des données par défaut en cas d'erreur
     return {
       markowitz: {
