@@ -1,3 +1,6 @@
+// ========== IMPORTS ==========
+import numeric from 'numeric';
+
 // ========== FONCTIONS DE BASE AVEC GESTION D'ERREURS MAXIMALE ==========
 
 /**
@@ -109,6 +112,82 @@ export const calculateSharpeRatio = (return_, risk, riskFreeRate = 0.02) => {
   } catch (error) {
     console.error('Erreur calculateSharpeRatio:', error);
     return 0.5;
+  }
+};
+
+// ========== FONCTIONS MATRICIELLES ==========
+
+/**
+ * Calcule la matrice de covariance
+ */
+const calculateCovarianceMatrix = (returnsMatrix) => {
+  try {
+    if (!returnsMatrix || !Array.isArray(returnsMatrix) || returnsMatrix.length === 0) {
+      return [[0.02, 0.01], [0.01, 0.02]]; // Matrice par défaut 2x2
+    }
+    
+    const n = returnsMatrix.length; // Nombre d'actifs
+    const m = returnsMatrix[0].length; // Nombre de périodes
+    
+    // Calculer les moyennes
+    const means = returnsMatrix.map(returns => 
+      returns.reduce((sum, r) => sum + r, 0) / m
+    );
+    
+    // Calculer la matrice de covariance
+    const covMatrix = Array(n).fill().map(() => Array(n).fill(0));
+    
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        let sum = 0;
+        for (let k = 0; k < m; k++) {
+          sum += (returnsMatrix[i][k] - means[i]) * (returnsMatrix[j][k] - means[j]);
+        }
+        covMatrix[i][j] = sum / (m - 1);
+      }
+    }
+    
+    return covMatrix;
+  } catch (error) {
+    console.error('Erreur calculateCovarianceMatrix:', error);
+    return [[0.02, 0.01], [0.01, 0.02]];
+  }
+};
+
+/**
+ * Calcule les poids optimaux selon Markowitz (maximum Sharpe ratio)
+ */
+const calculateOptimalWeights = (returnsMatrix, riskFreeRate = 0.02) => {
+  try {
+    if (!returnsMatrix || returnsMatrix.length === 0) {
+      return [0.333, 0.333, 0.334];
+    }
+    
+    const n = returnsMatrix.length;
+    const covMatrix = calculateCovarianceMatrix(returnsMatrix);
+    const means = returnsMatrix.map(returns => 
+      returns.reduce((sum, r) => sum + r, 0) / returns.length
+    );
+    
+    // Vecteur des rendements ajustés
+    const excessReturns = means.map(mu => mu - riskFreeRate);
+    
+    // Résoudre le système linéaire pour les poids optimaux
+    // w = (Σ^-1 * excessReturns) / (1^T * Σ^-1 * excessReturns)
+    const invCov = numeric.inv(covMatrix);
+    const numerator = numeric.dot(invCov, excessReturns);
+    const denominator = numeric.dot(numeric.rep([n], 1), numerator);
+    
+    const weights = numerator.map(w => w / denominator);
+    
+    // Normaliser pour s'assurer que la somme = 1
+    const sum = weights.reduce((s, w) => s + w, 0);
+    return weights.map(w => w / sum);
+    
+  } catch (error) {
+    console.error('Erreur calculateOptimalWeights:', error);
+    // Retourner des poids équilibrés en cas d'erreur
+    return Array(returnsMatrix.length).fill().map(() => 1 / returnsMatrix.length);
   }
 };
 
@@ -239,33 +318,46 @@ export const calculateMarkowitzPortfolio = (bankData) => {
     // Extraire les noms des banques
     const bankNames = bankData.map(b => b && b.name ? b.name : 'Banque').filter(Boolean);
     
-    // Récupérer les rendements
-    let allReturns = [];
-    bankData.forEach(bank => {
+    // Construire la matrice des rendements (n actifs x m périodes)
+    const returnsMatrix = bankData.map(bank => {
       if (bank && bank.returns && Array.isArray(bank.returns)) {
-        allReturns = [...allReturns, ...bank.returns];
+        return bank.returns;
       } else if (bank && bank.name && DEFAULT_RETURNS[bank.name]) {
-        allReturns = [...allReturns, ...DEFAULT_RETURNS[bank.name]];
+        return DEFAULT_RETURNS[bank.name];
+      } else {
+        return [0.02, 0.025, 0.018]; // Données par défaut
       }
     });
     
-    // Si toujours pas de rendements, utiliser des données par défaut
-    if (allReturns.length === 0) {
-      allReturns = [0.02, 0.025, 0.018, 0.022, 0.021, 0.019];
-    }
+    // Calculer les poids optimaux
+    const optimalWeights = calculateOptimalWeights(returnsMatrix);
     
-    // Calculer les métriques
-    const meanReturn = calculateMeanReturn(allReturns);
-    const variance = calculateVariance(allReturns, meanReturn);
-    const risk = calculateRisk(variance);
-    const sharpe = calculateSharpeRatio(meanReturn, risk);
+    // Calculer les métriques du portefeuille
+    const means = returnsMatrix.map(returns => 
+      returns.reduce((sum, r) => sum + r, 0) / returns.length
+    );
     
-    // Générer les poids
-    const weights = generateRandomWeights(bankNames);
+    const covMatrix = calculateCovarianceMatrix(returnsMatrix);
+    
+    // Rendement attendu du portefeuille
+    const portfolioReturn = numeric.dot(optimalWeights, means);
+    
+    // Risque du portefeuille (écart-type)
+    const portfolioVariance = numeric.dot(optimalWeights, numeric.dot(covMatrix, optimalWeights));
+    const portfolioRisk = Math.sqrt(portfolioVariance);
+    
+    // Ratio de Sharpe
+    const sharpe = calculateSharpeRatio(portfolioReturn, portfolioRisk);
+    
+    // Convertir les poids en objet
+    const weights = {};
+    bankNames.forEach((name, index) => {
+      weights[name] = optimalWeights[index].toFixed(3);
+    });
     
     return {
-      expectedReturn: (meanReturn * 100).toFixed(2),
-      risk: (risk * 100).toFixed(2),
+      expectedReturn: (portfolioReturn * 100).toFixed(2),
+      risk: (portfolioRisk * 100).toFixed(2),
       sharpeRatio: sharpe.toFixed(3),
       weights: weights,
       efficientFrontier: generateEfficientFrontier()
