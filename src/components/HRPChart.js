@@ -25,14 +25,33 @@ ChartJS.register(
 );
 
 const HRPChart = ({ portfolio }) => {
-  if (!portfolio) return null;
+  if (!portfolio) {
+    return (
+      <Card className="chart-container">
+        <Card.Body>
+          <p className="text-center">Aucune donnée disponible</p>
+        </Card.Body>
+      </Card>
+    );
+  }
+
+  // Obtenir les poids de façon sécurisée
+  const getWeights = () => {
+    try {
+      return portfolio && portfolio.weights ? portfolio.weights : { 'BIAT': 0.33, 'BNA': 0.33, 'Attijari': 0.34 };
+    } catch {
+      return { 'BIAT': 0.33, 'BNA': 0.33, 'Attijari': 0.34 };
+    }
+  };
+
+  const weights = getWeights();
 
   const pieData = {
-    labels: Object.keys(portfolio.weights),
+    labels: Object.keys(weights),
     datasets: [
       {
         label: 'Poids des actifs',
-        data: Object.values(portfolio.weights).map(w => parseFloat(w) * 100),
+        data: Object.values(weights).map(w => (parseFloat(w) || 0) * 100),
         backgroundColor: [
           'rgba(255, 99, 132, 0.8)',
           'rgba(54, 162, 235, 0.8)',

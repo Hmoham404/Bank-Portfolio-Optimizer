@@ -50,7 +50,7 @@ const Header = () => {
       <div className="ihec-badge-container">
         <div className="ihec-badge">
           <span className="badge-icon">🎓</span>
-          <span className="badge-text">IHEC Carthage - Financial Engineering</span>
+          <span className="badge-text">IHEC Carthage - Master Analyse Financière</span>
           <span className="badge-icon">📚</span>
         </div>
       </div>

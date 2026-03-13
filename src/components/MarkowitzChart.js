@@ -25,14 +25,30 @@ ChartJS.register(
 );
 
 const MarkowitzChart = ({ portfolio }) => {
-  if (!portfolio) return null;
+  if (!portfolio) {
+    return (
+      <Card className="chart-container">
+        <Card.Body>
+          <p className="text-center">Aucune donnée disponible</p>
+        </Card.Body>
+      </Card>
+    );
+  }
+
+  // Générer des données par défaut si nécessaire
+  const defaultData = {
+    labels: ['0%', '10%', '20%', '30%', '40%', '50%'],
+    return: [5, 8, 10, 11, 11.5, 11.8]
+  };
 
   const data = {
     labels: ['0%', '5%', '10%', '15%', '20%', '25%', '30%', '35%', '40%', '45%', '50%'],
     datasets: [
       {
         label: 'Frontière Efficiente',
-        data: portfolio.efficientFrontier.map(p => p.return),
+        data: portfolio.efficientFrontier ? 
+          portfolio.efficientFrontier.map(p => parseFloat(p.return) || 0) : 
+          defaultData.return,
         borderColor: 'rgb(255, 99, 132)',
         backgroundColor: 'rgba(255, 99, 132, 0.5)',
         tension: 0.4,
@@ -42,7 +58,10 @@ const MarkowitzChart = ({ portfolio }) => {
       },
       {
         label: 'Portefeuille Optimal',
-        data: [{x: parseFloat(portfolio.risk), y: parseFloat(portfolio.expectedReturn)}],
+        data: [{
+          x: parseFloat(portfolio.risk) || 10, 
+          y: parseFloat(portfolio.expectedReturn) || 8
+        }],
         borderColor: 'rgb(53, 162, 235)',
         backgroundColor: 'rgba(53, 162, 235, 0.8)',
         type: 'scatter',

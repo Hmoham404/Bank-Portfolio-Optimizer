@@ -4,15 +4,50 @@ import Badge from 'react-bootstrap/Badge';
 import { FaArrowUp, FaArrowDown, FaBalanceScale } from 'react-icons/fa';
 
 const PortfolioResults = ({ markowitz, hrp }) => {
-  if (!markowitz || !hrp) return null;
+  // Vérification que les données existent
+  if (!markowitz || !hrp) {
+    return (
+      <Card className="bg-warning p-4 text-center">
+        <h5>Données insuffisantes pour l'affichage</h5>
+      </Card>
+    );
+  }
+
+  // Fonction sécurisée pour obtenir les valeurs
+  const getValue = (obj, prop, defaultValue = '0.00') => {
+    try {
+      return obj && obj[prop] ? obj[prop] : defaultValue;
+    } catch {
+      return defaultValue;
+    }
+  };
+
+  // Fonction pour obtenir les poids
+  const getWeights = (obj) => {
+    try {
+      return obj && obj.weights ? obj.weights : {};
+    } catch {
+      return {};
+    }
+  };
 
   const getComparisonBadge = (markowitzVal, hrpVal) => {
-    const diff = parseFloat(markowitzVal) - parseFloat(hrpVal);
-    if (Math.abs(diff) < 0.1) return <Badge bg="secondary">⚖️ Équivalent</Badge>;
-    return diff > 0 ? 
-      <Badge bg="success"><FaArrowUp /> Markowitz supérieur</Badge> : 
-      <Badge bg="info"><FaArrowDown /> HRP supérieur</Badge>;
+    try {
+      const mVal = parseFloat(markowitzVal) || 0;
+      const hVal = parseFloat(hrpVal) || 0;
+      const diff = mVal - hVal;
+      
+      if (Math.abs(diff) < 0.1) return <Badge bg="secondary">⚖️ Équivalent</Badge>;
+      return diff > 0 ? 
+        <Badge bg="success"><FaArrowUp /> Markowitz supérieur</Badge> : 
+        <Badge bg="info"><FaArrowDown /> HRP supérieur</Badge>;
+    } catch {
+      return <Badge bg="secondary">⚖️ Non disponible</Badge>;
+    }
   };
+
+  const markowitzWeights = getWeights(markowitz);
+  const hrpWeights = getWeights(hrp);
 
   return (
     <Row>
@@ -28,33 +63,37 @@ const PortfolioResults = ({ markowitz, hrp }) => {
             <div className="metric-grid">
               <div className="metric-item">
                 <span className="metric-label">Rendement</span>
-                <span className="metric-value">{markowitz.expectedReturn}%</span>
+                <span className="metric-value">{getValue(markowitz, 'expectedReturn')}%</span>
               </div>
               <div className="metric-item">
                 <span className="metric-label">Risque</span>
-                <span className="metric-value">{markowitz.risk}%</span>
+                <span className="metric-value">{getValue(markowitz, 'risk')}%</span>
               </div>
               <div className="metric-item">
                 <span className="metric-label">Sharpe</span>
-                <span className="metric-value">{markowitz.sharpeRatio}</span>
+                <span className="metric-value">{getValue(markowitz, 'sharpeRatio')}</span>
               </div>
             </div>
 
             <h6 className="mt-4">📋 Poids des actifs :</h6>
             <div className="weight-table">
-              {Object.entries(markowitz.weights).map(([bank, weight]) => (
-                <div key={bank} className="weight-item">
-                  <span>{bank}</span>
-                  <Badge bg="light" text="dark">
-                    {(parseFloat(weight) * 100).toFixed(1)}%
-                  </Badge>
-                </div>
-              ))}
+              {Object.keys(markowitzWeights).length > 0 ? (
+                Object.entries(markowitzWeights).map(([bank, weight]) => (
+                  <div key={bank} className="weight-item">
+                    <span>{bank}</span>
+                    <Badge bg="light" text="dark">
+                      {(parseFloat(weight) * 100 || 0).toFixed(1)}%
+                    </Badge>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center">Aucun poids disponible</p>
+              )}
             </div>
 
             <ProgressBar 
-              now={parseFloat(markowitz.risk) * 10} 
-              label={`Risque ${markowitz.risk}%`}
+              now={parseFloat(getValue(markowitz, 'risk', '10')) * 10} 
+              label={`Risque ${getValue(markowitz, 'risk')}%`}
               variant="danger"
               className="mt-3"
             />
@@ -74,33 +113,37 @@ const PortfolioResults = ({ markowitz, hrp }) => {
             <div className="metric-grid">
               <div className="metric-item">
                 <span className="metric-label">Rendement</span>
-                <span className="metric-value">{hrp.expectedReturn}%</span>
+                <span className="metric-value">{getValue(hrp, 'expectedReturn')}%</span>
               </div>
               <div className="metric-item">
                 <span className="metric-label">Risque</span>
-                <span className="metric-value">{hrp.risk}%</span>
+                <span className="metric-value">{getValue(hrp, 'risk')}%</span>
               </div>
               <div className="metric-item">
                 <span className="metric-label">Sharpe</span>
-                <span className="metric-value">{hrp.sharpeRatio}</span>
+                <span className="metric-value">{getValue(hrp, 'sharpeRatio')}</span>
               </div>
             </div>
 
             <h6 className="mt-4">📋 Poids des actifs :</h6>
             <div className="weight-table">
-              {Object.entries(hrp.weights).map(([bank, weight]) => (
-                <div key={bank} className="weight-item">
-                  <span>{bank}</span>
-                  <Badge bg="light" text="dark">
-                    {(parseFloat(weight) * 100).toFixed(1)}%
-                  </Badge>
-                </div>
-              ))}
+              {Object.keys(hrpWeights).length > 0 ? (
+                Object.entries(hrpWeights).map(([bank, weight]) => (
+                  <div key={bank} className="weight-item">
+                    <span>{bank}</span>
+                    <Badge bg="light" text="dark">
+                      {(parseFloat(weight) * 100 || 0).toFixed(1)}%
+                    </Badge>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center">Aucun poids disponible</p>
+              )}
             </div>
 
             <ProgressBar 
-              now={parseFloat(hrp.risk) * 10} 
-              label={`Risque ${hrp.risk}%`}
+              now={parseFloat(getValue(hrp, 'risk', '10')) * 10} 
+              label={`Risque ${getValue(hrp, 'risk')}%`}
               variant="info"
               className="mt-3"
             />
@@ -116,15 +159,24 @@ const PortfolioResults = ({ markowitz, hrp }) => {
             </h5>
             <Row className="text-center">
               <Col md={4}>
-                {getComparisonBadge(markowitz.expectedReturn, hrp.expectedReturn)}
+                {getComparisonBadge(
+                  getValue(markowitz, 'expectedReturn'), 
+                  getValue(hrp, 'expectedReturn')
+                )}
                 <div className="mt-2">Rendement</div>
               </Col>
               <Col md={4}>
-                {getComparisonBadge(hrp.risk, markowitz.risk)}
+                {getComparisonBadge(
+                  getValue(hrp, 'risk'), 
+                  getValue(markowitz, 'risk')
+                )}
                 <div className="mt-2">Risque (inversé)</div>
               </Col>
               <Col md={4}>
-                {getComparisonBadge(markowitz.sharpeRatio, hrp.sharpeRatio)}
+                {getComparisonBadge(
+                  getValue(markowitz, 'sharpeRatio'), 
+                  getValue(hrp, 'sharpeRatio')
+                )}
                 <div className="mt-2">Ratio de Sharpe</div>
               </Col>
             </Row>
